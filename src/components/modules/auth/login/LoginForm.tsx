@@ -14,30 +14,25 @@ import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import Link from "next/link";
 import Logo from "@/app/assets/svgs/Logo";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registrationSchema } from "./registerValidation";
-import { registerUser } from "@/services/AuthService";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { loginSchema } from "./loginValidation";
+import { loginUser } from "@/services/AuthService";
 
-export default function RegisterForm() {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   const form = useForm({
-    resolver: zodResolver(registrationSchema),
+    resolver: zodResolver(loginSchema),
   });
 
   const {
     formState: { isSubmitting },
   } = form;
 
-
-  const password = form.watch("password");
-  const passwordConfirm = form.watch("passwordConfirm");
-
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
-      const res = await registerUser(data);
+      const res = await loginUser(data);
       if (res?.success) {
         toast.success(res?.message);
       } else {
@@ -53,29 +48,13 @@ export default function RegisterForm() {
       <div className="flex items-center space-x-4 ">
         <Logo />
         <div>
-          <h1 className="text-xl font-semibold">Register</h1>
-          <p className="font-extralight text-sm text-gray-600">
-            Join us today and start your journey!
-          </p>
+          <h1 className="text-xl font-semibold">Login</h1>
+          <p className="font-extralight text-sm text-gray-600">Welcome back</p>
         </div>
       </div>
 
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name="email"
@@ -118,59 +97,19 @@ export default function RegisterForm() {
             )}
           />
 
-          {/* Confirm Password Field with Show/Hide Option */}
-          <FormField
-            control={form.control}
-            name="passwordConfirm"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPasswordConfirm ? "text" : "password"}
-                      {...field}
-                      value={field.value || ""}
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-3 flex items-center"
-                      onClick={() =>
-                        setShowPasswordConfirm(!showPasswordConfirm)
-                      }
-                    >
-                      {showPasswordConfirm ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-
-                {passwordConfirm && password !== passwordConfirm ? (
-                  <FormMessage> Password does not match </FormMessage>
-                ) : (
-                  <FormMessage />
-                )}
-              </FormItem>
-            )}
-          />
-
-          <Button
-            disabled={passwordConfirm && password !== passwordConfirm}
-            type="submit"
-            className="mt-5 w-full cursor-pointer"
-          >
-            {isSubmitting ? "Registering...." : "Register"}
+          <Button type="submit" className="mt-5 w-full cursor-pointer">
+            {isSubmitting ? "Logging...." : "Login"}
           </Button>
         </form>
       </Form>
 
       <p className="text-sm text-gray-600 text-center my-3">
-        Already have an account?
-        <Link href="/login" className="text-blue-600 hover:underline hover:text-red-500">
-          Login
+        Do not have any account ?
+        <Link
+          href="/register"
+          className="text-blue-600 hover:underline hover:text-red-500"
+        >
+          Register
         </Link>
       </p>
     </div>
