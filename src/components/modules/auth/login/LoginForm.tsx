@@ -17,10 +17,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { loginSchema } from "./loginValidation";
-import { loginUser } from "@/services/AuthService";
+import { loginUser, reCaptchaVerification } from "@/services/AuthService";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [recaptchaStatus, setRecaptchaStatus] = useState(false);
+  const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -35,11 +39,23 @@ export default function LoginForm() {
       const res = await loginUser(data);
       if (res?.success) {
         toast.success(res?.message);
+        router.push("/");
       } else {
         toast.error(res?.message);
       }
     } catch (err: any) {
       toast.error(err.message);
+    }
+  };
+
+  const handleRecaptcha = async (value: string | null) => {
+    try {
+      const res = await reCaptchaVerification(value!);
+      if (res?.success) {
+        setRecaptchaStatus(true);
+      }
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
@@ -68,7 +84,6 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-
           {/* Password Field with Show/Hide Option */}
           <FormField
             control={form.control}
@@ -96,8 +111,16 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-
-          <Button type="submit" className="mt-5 w-full cursor-pointer">
+          <ReCAPTCHA
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_CLIENT_KEY as string}
+            onChange={handleRecaptcha}
+          />
+          ,
+          <Button
+            disabled={recaptchaStatus ? false : true}
+            type="submit"
+            className="mt-5 w-full cursor-pointer"
+          >
             {isSubmitting ? "Logging...." : "Login"}
           </Button>
         </form>

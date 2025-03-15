@@ -18,11 +18,14 @@ import { registrationSchema } from "./registerValidation";
 import { registerUser } from "@/services/AuthService";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/context/userContext";
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-
+  const router = useRouter();
+const {setIsLoading} = useUser();
   const form = useForm({
     resolver: zodResolver(registrationSchema),
   });
@@ -30,7 +33,6 @@ export default function RegisterForm() {
   const {
     formState: { isSubmitting },
   } = form;
-
 
   const password = form.watch("password");
   const passwordConfirm = form.watch("passwordConfirm");
@@ -40,6 +42,8 @@ export default function RegisterForm() {
       const res = await registerUser(data);
       if (res?.success) {
         toast.success(res?.message);
+        setIsLoading(true);
+        router.push("/");
       } else {
         toast.error(res?.message);
       }
@@ -169,7 +173,10 @@ export default function RegisterForm() {
 
       <p className="text-sm text-gray-600 text-center my-3">
         Already have an account?
-        <Link href="/login" className="text-blue-600 hover:underline hover:text-red-500">
+        <Link
+          href="/login"
+          className="text-blue-600 hover:underline hover:text-red-500"
+        >
           Login
         </Link>
       </p>
