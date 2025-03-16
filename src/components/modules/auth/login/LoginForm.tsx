@@ -19,11 +19,14 @@ import { toast } from "sonner";
 import { loginSchema } from "./loginValidation";
 import { loginUser, reCaptchaVerification } from "@/services/AuthService";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [recaptchaStatus, setRecaptchaStatus] = useState(false);
+
+  const searchQuery = useSearchParams();
+  const redirectUrl = searchQuery.get('redirectUrl');
   const router = useRouter();
 
   const form = useForm({
@@ -39,7 +42,11 @@ export default function LoginForm() {
       const res = await loginUser(data);
       if (res?.success) {
         toast.success(res?.message);
-        router.push("/");
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          router.push("/profile");
+        }
       } else {
         toast.error(res?.message);
       }
@@ -112,7 +119,7 @@ export default function LoginForm() {
             )}
           />
           <ReCAPTCHA
-            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_CLIENT_KEY as string}
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_CLIENT_KEY!}
             onChange={handleRecaptcha}
           />
           ,
